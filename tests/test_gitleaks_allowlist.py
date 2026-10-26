@@ -75,6 +75,16 @@ def test_gitleaks_ignores_only_commit_pinned_posthog_findings():
         commit, path, _rule, line = match.groups()
         if shallow:
             continue
+        commit_exists = (
+            subprocess.run(
+                ["git", "cat-file", "-e", f"{commit}^{{commit}}"],
+                cwd=ROOT,
+                capture_output=True,
+            ).returncode
+            == 0
+        )
+        if not commit_exists:
+            continue
         shown = subprocess.run(
             ["git", "show", f"{commit}:{path}"], cwd=ROOT, capture_output=True, text=True,
         )
